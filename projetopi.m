@@ -5,11 +5,19 @@ clc
 
 pkg image load
 
-domino=imread('3.jpg');
-domino = im2bw(domino);
-
-[centers,radii] = imfindcircles(domino,[38 55],'ObjectPolarity','dark','sensitivity',0.9);
-imshow(domino);
+%tirar fotos do msm angulo
+%subtrair a primeira com a proxima jogada
+%salvar a primeira jogada em uma variavel
+%sempre subtrair a proxima jogada da anterior e manter a primeira jogada para saber uma das extremidades
+domino=imread('2.jpg');
+domino2=imread('3.jpg');
+domino2=rgb2gray(domino2);
+domino=rgb2gray(domino);
+domino3 = domino2-domino;
+imshow(domino3);
+figure;
+[centers,radii] = imfindcircles(domino3,[30 50],'ObjectPolarity','dark','sensitivity',0.9);
+imshow(domino3);
 h = viscircles(centers, radii);
 tam = length(centers);
 caption = sprintf('valor = %d', tam);
