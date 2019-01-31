@@ -10,15 +10,10 @@ pkg image load
 %salvar a primeira jogada em uma variavel
 %sempre subtrair a proxima jogada da anterior e manter a primeira jogada para saber uma das extremidades
 
-frame = javaObject("javax.swing.JFrame");
-frame.setBounds(0,0,100,100);
-frame.setVisible(true);
-fc = javaObject ("javax.swing.JFileChooser")
-returnVal = fc.showOpenDialog(frame);
-file = fc.getSelectedFile();
-file.getName()
+helpdlg ("Selecione a imagem com a peca inicial do jogo de domino.","Iniciando Sistema");
+[jogadainicial, caminhodoarquivo, fltidx] = uigetfile ({"*.png;*.jpg", "Tipos de Imagens Suportadas"},"Selecione o arquivo inicial")
 
-domino = imread('1.jpg');
+domino = imread([caminhodoarquivo jogadainicial]);
 domino = im2bw(domino, graythresh(domino));
 imshow(domino);
 [centers,radii] = imfindcircles(domino,[60 120],'ObjectPolarity','dark','sensitivity',0.85);
@@ -27,5 +22,8 @@ tam = length(centers);
 caption = sprintf('valor = %d', tam-1);
 text(50, 0, caption, 'FontSize', 20);
 
+%<<<<<<< HEAD
+%=======
+%>>>>>>> 12c2e84ee446acefbcfe9baf3e5452242babeb08
 %segchannel segmentaçcao por canal de cor
 
