@@ -20,7 +20,9 @@ imshow(domino);
 h = viscircles(centers, radii);
 tam = length(centers);
 caption = sprintf('valor = %d', tam-1);
-text(50, 0, caption, 'FontSize', 20);
+text(80, 90, caption, 'Color', 'red', 'FontSize', 20);
+colors = arrayfun(@(x)rand(1,3), t, 'UniformOutput', false);
+set(text, {'Color'}, colors);
 
 %<<<<<<< HEAD
 %=======
