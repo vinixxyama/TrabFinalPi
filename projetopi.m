@@ -41,6 +41,8 @@ while(Escolha == 1)
     endif
     %Redimensiona a imagem para facilitar nas manipulações
     domino = imresize (domino, [306 408]);
+    se = strel('square',2);
+    domino = imerode(domino,se);
     imshow(domino);
     %Otimiza para segmentação
     domino_bw = im2bw(domino, graythresh(domino));
@@ -112,8 +114,6 @@ while(Escolha == 1)
       
     endfor
     if(acao == 2)
-      test = array_cenario(3);
-      testmao = array_mao(3);
       encontrou = 0;
       for k=3:length(array_cenario) && encontrou == 0
         for l=3:length(array_mao) && encontrou == 0
