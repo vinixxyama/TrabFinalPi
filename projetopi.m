@@ -5,12 +5,11 @@ clc
 
 pkg image load
 
-array_cenario = [-1, -1];
-array_mao = [-1, -1];
+
 %Função responsável por marcar os circulos de uma imagem%
 function result = num_circ_func (nome_img)
     figure,imshow(nome_img);
-    [centers,radii] = imfindcircles(nome_img,[5 25],'ObjectPolarity','dark','sensitivity',0.5,'EdgeThreshold',0.3);
+    [centers,radii] = imfindcircles(nome_img,[5 30],'ObjectPolarity','dark','sensitivity',0.5,'EdgeThreshold',0.2);
     h = viscircles(centers, radii);
     tam = length(centers);
     result = rows(centers);
@@ -21,15 +20,17 @@ endfunction
 Escolha = menu("Iniciar a aplicacao?","Sim","Nao");
 
 while(Escolha == 1)
+  array_cenario = [-1, -1];
+  array_mao = [-1, -1];
   %Abre o FilePicker - Jogada Inicial%
   helpdlg ("Selecione a imagem com a situacao atual do jogo de domino.","Iniciando Sistema");
-  [situacaoatual, caminhodoarquivo, fltidx] = uigetfile ({"*.png;*.jpg", "Tipos de Imagens Suportadas"},"Selecione o arquivo inicial")
+  [situacaoatual, caminhodoarquivo, fltidx] = uigetfile ({"*.png;*.jpg;*.jpeg", "Tipos de Imagens Suportadas"},"Selecione o arquivo inicial")
 
   %Abre o FilePicker - Mão do Jogador%
   helpdlg ("Selecione a imagem com a sua mao do jogo de domino.","Selecione a sua mao");
-  [maoatual, caminhodoarquivomao, fltidx] = uigetfile ({"*.png;*.jpg", "Tipos de Imagens Suportadas"},"Selecione o arquivo inicial")
+  [maoatual, caminhodoarquivomao, fltidx] = uigetfile ({"*.png;*.jpg;*.jpeg", "Tipos de Imagens Suportadas"},"Selecione o arquivo inicial")
 
-  %Leitura de cenario atual%
+  %Leitura de cenario atual, lendo jogada (acao 1) ou mao (acao 2)%
   acao = 1;
   while (acao == 1 || acao == 2)
     %Abre a imagem selecionada, estado - acao 1 ou mao - acao 2
@@ -74,38 +75,55 @@ while(Escolha == 1)
         %Corta a peça vertical nas duas extremidades possíveis%
         n=fix(size(peca_circ,1)/2);
         A=peca_circ(1:n,:,:);
-        xyz = num_circ_func(A);
+        %Conta os numeros da extremidade e exibe%
+        qtd_extr = num_circ_func(A);
         if (acao == 1)
-          array_cenario = [array_cenario, xyz];
+          array_cenario = [array_cenario, qtd_extr];
         else
-          array_mao = [array_mao, xyz];
+          array_mao = [array_mao, qtd_extr];
         endif
         B=peca_circ(n+1:end,:,:);
-        xyz = num_circ_func(B);
+        %Conta os numeros da extremidade e exibe%
+        qtd_extr = num_circ_func(B);
         if (acao == 1)
-          array_cenario = [array_cenario, xyz];
+          array_cenario = [array_cenario, qtd_extr];
         else
-          array_mao = [array_mao, xyz];
+          array_mao = [array_mao, qtd_extr];
         endif
       else
         %Corta a peça horizontal nas duas extremidades possiveis%
         A = peca_circ(:, 1:end/2, :);
-        xyz = num_circ_func(A);
+        %Conta os numeros da extremidade e exibe%
+        qtd_extr = num_circ_func(A);
         if (acao == 1)
-          array_cenario = [array_cenario, xyz];
+          array_cenario = [array_cenario, qtd_extr];
         else
-          array_mao = [array_mao, xyz];
+          array_mao = [array_mao, qtd_extr];
         endif
         B = peca_circ(:, end/2+1:end, :);
-        xyz = num_circ_func(B);
+        %Conta os numeros da extremidade e exibe%
+        qtd_extr = num_circ_func(B);
         if (acao == 1)
-          array_cenario = [array_cenario, xyz];
+          array_cenario = [array_cenario, qtd_extr];
         else
-          array_mao = [array_mao, xyz];
+          array_mao = [array_mao, qtd_extr];
         endif
       endif
       
     endfor
+    if(acao == 2)
+      test = array_cenario(3);
+      testmao = array_mao(3);
+      encontrou = 0;
+      for k=3:length(array_cenario) && encontrou == 0
+        for l=3:length(array_mao) && encontrou == 0
+          if(array_mao(l) == array_cenario(k))
+            peca_igualdade_mao = ceil(l/2)-1;
+            encontrou = 1;
+          endif
+        endfor
+      endfor
+    endif
     acao = acao + 1;
   endwhile
   Escolha = menu("Continuar para proxima etapa?","Sim","Nao");
