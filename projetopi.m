@@ -20,7 +20,6 @@ endfunction
 %Fun��o respons�vel por encontrar uma peça valida%
 function peca = sugestao_peca_func (mesa,mao)
   peca = [-1,-1];
-  mesa
   inicio=mesa(1)
   fim=mesa(2)
   encontrou=1;
@@ -99,7 +98,6 @@ while(Escolha == 1)
         n=fix(size(peca_circ,1)/2);
         A=peca_circ(1:n,:,:);
         B=peca_circ(n+1:end,:,:);
-        
         %Conta os numeros da extremidade e exibe%
         qtd_extr = [num_circ_func(A),num_circ_func(B)];
         if (acao == 1)
@@ -107,9 +105,7 @@ while(Escolha == 1)
         else
           array_mao = [array_mao, {qtd_extr}];
         endif
-        
       else
-      
         %Corta a peca horizontal nas duas extremidades possiveis%
         A = peca_circ(:, fix(1:end/2), :);
         B = peca_circ(:, fix(end/2+1):end, :);
@@ -120,27 +116,32 @@ while(Escolha == 1)
         else
           array_mao = [array_mao, {qtd_extr}];
         endif
-        
       endif
-      
     endfor
-    
     acao++;
   endwhile
-  
+  fimdejogo=0;
   %Processa dados
-  while(acao == 3)
+  while(acao >= 3&&fimdejogo==0)
     %Exibe o n�mero da pe�a%
     peca_suger=sugestao_peca_func(array_mesa,array_mao);
     mytitle=strcat('Sugestao de Peca: [', num2str(peca_suger(1)));
     mytitle=strcat(mytitle, ',');
     mytitle=strcat(mytitle, num2str(peca_suger(2)));
     mytitle=strcat(mytitle, ']');
-    msgbox(mytitle,"Sugestao");
+    msgbox(mytitle,"Sugestao, nao implementada");
     acao++;
+    fimdejogo=1;
   endwhile
   
+  if(fimdejogo==1)
+    close all
+    clear all
+    clc
+  endif
+  
   Escolha = menu("Continuar para proxima etapa?","Sim","Nao");
+  
 endwhile
 errordlg("A aplicacao foi abortada pelo usuario","Fim");
 
