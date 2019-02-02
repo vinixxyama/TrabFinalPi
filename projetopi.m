@@ -20,29 +20,32 @@ endfunction
 %Fun��o respons�vel por encontrar uma peça valida%
 function peca = sugestao_peca_func (mesa,mao)
   peca = [-1,-1];
-  inicio=mesa(1,1);
-  fim=mesa(size(mesa,1),2);
-
+  mesa
+  inicio=mesa(1)
+  fim=mesa(2)
   encontrou=1;
   
-  for i=1: size(mao,1) && encontrou==0
-    if(mao(i,1)==inicio||mao(i,2)==inicio||mao(i,1)==fim||mao(i,2)==fim)
-      peca = mao(i);
+  for i=1: size(mao,2)/2
+    if(encontrou==0)%&&(mao(i))(1)==inicio||mao(i*2)==inicio||mao((i*2)-1)==fim||mao(i*2)==fim)
+      peca = [mao((i*2)-1),mao(i*2)];
       encontrou=1;
     endif
   endfor
-
+  
 endfunction
 
 Escolha = menu("Iniciar a aplicacao?","Sim","Nao");
 
 %Abre o FilePicker - Jogada Inicial%
-helpdlg ("Selecione a imagem com a situacao atual do jogo de domino.","Iniciando Sistema");
-[situacaoatual, caminhodoarquivo, fltidx] = uigetfile ({"*.png;*.jpg;*.jpeg", "Tipos de Imagens Suportadas"},"Selecione o arquivo inicial")
-
+%helpdlg ("Selecione a imagem com a situacao atual do jogo de domino.","Iniciando Sistema");
+%[situacaoatual, caminhodoarquivo, fltidx] = uigetfile ({"*.png;*.jpg;*.jpeg", "Tipos de Imagens Suportadas"},"Selecione o arquivo inicial")
+caminhodoarquivo='./imagens/mesa2.jpeg';
+situacaoatual='';
 %Abre o FilePicker - M�o do Jogador%
-helpdlg ("Selecione a imagem com a sua mao do jogo de domino.","Selecione a sua mao");
-[maoatual, caminhodoarquivomao, fltidx] = uigetfile ({"*.png;*.jpg;*.jpeg", "Tipos de Imagens Suportadas"},"Selecione o arquivo inicial")
+%helpdlg ("Selecione a imagem com a sua mao do jogo de domino.","Selecione a sua mao");
+%[maoatual, caminhodoarquivomao, fltidx] = uigetfile ({"*.png;*.jpg;*.jpeg", "Tipos de Imagens Suportadas"},"Selecione o arquivo inicial")
+caminhodoarquivomao='./imagens/mao3.jpeg';
+maoatual='';
 
 array_mesa = [];
 array_mao = [];
@@ -109,37 +112,34 @@ while(Escolha == 1)
       
         %Corta a peca horizontal nas duas extremidades possiveis%
         A = peca_circ(:, fix(1:end/2), :);
-        %Conta os numeros da extremidade e exibe%
-        qtd_extr = num_circ_func(A);
-        if (acao == 1)
-          array_mesa = [array_mesa, qtd_extr];
-        else
-          array_mao = [array_mao, qtd_extr];
-        endif
         B = peca_circ(:, fix(end/2+1):end, :);
         %Conta os numeros da extremidade e exibe%
-        qtd_extr = num_circ_func(B);
+        qtd_extr = [num_circ_func(A), num_circ_func(B)];
         if (acao == 1)
-          array_mesa = [array_mesa, qtd_extr];
+          array_mesa = [array_mesa, {qtd_extr}];
         else
-          array_mao = [array_mao, qtd_extr];
+          array_mao = [array_mao, {qtd_extr}];
         endif
+        
       endif
       
     endfor
+    
+    acao++;
+  endwhile
   
   %Processa dados
   while(acao == 3)
     %Exibe o n�mero da pe�a%
-    peca_suger=sugestao_peca_func(mesa,mao);
+    peca_suger=sugestao_peca_func(array_mesa,array_mao);
     mytitle=strcat('Sugestao de Peca: [', num2str(peca_suger(1)));
     mytitle=strcat(mytitle, ',');
     mytitle=strcat(mytitle, num2str(peca_suger(2)));
     mytitle=strcat(mytitle, ']');
-    errordlg ("Sugestao",mytitle);
+    msgbox(mytitle,"Sugestao");
+    acao++;
   endwhile
   
-  acao++;
   Escolha = menu("Continuar para proxima etapa?","Sim","Nao");
 endwhile
 errordlg("A aplicacao foi abortada pelo usuario","Fim");
