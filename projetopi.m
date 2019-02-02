@@ -6,7 +6,7 @@ clc
 pkg image load
 
 
-%Função responsável por marcar os circulos de uma imagem%
+%Funï¿½ï¿½o responsï¿½vel por marcar os circulos de uma imagem%
 function result = num_circ_func (nome_img)
     figure,imshow(nome_img);
     [centers,radii] = imfindcircles(nome_img,[5 30],'ObjectPolarity','dark','sensitivity',0.5,'EdgeThreshold',0.2);
@@ -17,21 +17,39 @@ function result = num_circ_func (nome_img)
     text(5, 5, caption, 'Color', 'Blue', 'FontSize', 25);
 endfunction
 
+%Funï¿½ï¿½o responsï¿½vel por encontrar uma peÃ§a valida%
+function peca = sugestao_peca_func (mesa,mao)
+  peca = [-1,-1];
+  inicio=mesa(1,1);
+  fim=mesa(size(mesa,1),2);
+
+  encontrou=1;
+  
+  for i=1: size(mao,1) && encontrou==0
+    if(mao(i,1)==inicio||mao(i,2)==inicio||mao(i,1)==fim||mao(i,2)==fim)
+      peca = mao(i);
+      encontrou=1;
+    endif
+  endfor
+
+endfunction
+
 Escolha = menu("Iniciar a aplicacao?","Sim","Nao");
 
+%Abre o FilePicker - Jogada Inicial%
+helpdlg ("Selecione a imagem com a situacao atual do jogo de domino.","Iniciando Sistema");
+[situacaoatual, caminhodoarquivo, fltidx] = uigetfile ({"*.png;*.jpg;*.jpeg", "Tipos de Imagens Suportadas"},"Selecione o arquivo inicial")
+
+%Abre o FilePicker - Mï¿½o do Jogador%
+helpdlg ("Selecione a imagem com a sua mao do jogo de domino.","Selecione a sua mao");
+[maoatual, caminhodoarquivomao, fltidx] = uigetfile ({"*.png;*.jpg;*.jpeg", "Tipos de Imagens Suportadas"},"Selecione o arquivo inicial")
+
+array_mesa = [];
+array_mao = [];
+acao = 1;
 while(Escolha == 1)
-  array_cenario = [-1, -1];
-  array_mao = [-1, -1];
-  %Abre o FilePicker - Jogada Inicial%
-  helpdlg ("Selecione a imagem com a situacao atual do jogo de domino.","Iniciando Sistema");
-  [situacaoatual, caminhodoarquivo, fltidx] = uigetfile ({"*.png;*.jpg;*.jpeg", "Tipos de Imagens Suportadas"},"Selecione o arquivo inicial")
-
-  %Abre o FilePicker - Mão do Jogador%
-  helpdlg ("Selecione a imagem com a sua mao do jogo de domino.","Selecione a sua mao");
-  [maoatual, caminhodoarquivomao, fltidx] = uigetfile ({"*.png;*.jpg;*.jpeg", "Tipos de Imagens Suportadas"},"Selecione o arquivo inicial")
-
   %Leitura de cenario atual, lendo jogada (acao 1) ou mao (acao 2)%
-  acao = 1;
+  
   while (acao == 1 || acao == 2)
     %Abre a imagem selecionada, estado - acao 1 ou mao - acao 2
     if(acao == 1)
@@ -39,20 +57,20 @@ while(Escolha == 1)
     else
       domino = imread([caminhodoarquivomao maoatual]);
     endif
-    %Redimensiona a imagem para facilitar nas manipulações
+    %Redimensiona a imagem para facilitar nas manipulaï¿½ï¿½es
     domino = imresize (domino, [306 408]);
     se = strel('square',2);
     domino = imerode(domino,se);
     imshow(domino);
-    %Otimiza para segmentação
+    %Otimiza para segmentaï¿½ï¿½o
     domino_bw = im2bw(domino, graythresh(domino));
     domino_bw = imfill(domino_bw, 'holes');
 
-    %Mapeia a quantidade de peças na jogada
+    %Mapeia a quantidade de peï¿½as na jogada
     label = bwlabel(domino_bw);
     qtdobjt = max(max(label));
 
-    %Encontra as coordenadas de todas as peças segmentadas, de forma iterativa%
+    %Encontra as coordenadas de todas as peï¿½as segmentadas, de forma iterativa%
     for j=1:max(max(label))
       [row, col] = find(label==j);
       len=max(row)-min(row)+2;
@@ -61,71 +79,69 @@ while(Escolha == 1)
       sy=min(col)-1;
       sx=min(row)-1;
       
-      %Marca a peça segmentada, de imagem tratada, na imagem original%
+      %Marca a peï¿½a segmentada, de imagem tratada, na imagem original%
       for i=1:size(row,1)
         x=row(i,1)-sx;
         y=col(i,1)-sy;
         target(x,y)=domino(row(i,1),col(i,1));
       end
-      %Exibe o número da peça%
-      mytitle=strcat('Numero da Peça:', num2str(j));
+      %Exibe o nï¿½mero da peï¿½a%
+      mytitle=strcat('Numero da Peca:', num2str(j));
       figure,imshow(target);title(mytitle);
       
-      %Observa a disposição da peça para corte, horizontal ou vertical%
+      %Observa a disposiï¿½ï¿½o da peï¿½a para corte, horizontal ou vertical%
       peca_circ = im2bw(target, graythresh(domino));
       if (rows(peca_circ) > columns(peca_circ))
-        %Corta a peça vertical nas duas extremidades possíveis%
+        %Corta a peï¿½a vertical nas duas extremidades possï¿½veis%
         n=fix(size(peca_circ,1)/2);
         A=peca_circ(1:n,:,:);
-        %Conta os numeros da extremidade e exibe%
-        qtd_extr = num_circ_func(A);
-        if (acao == 1)
-          array_cenario = [array_cenario, qtd_extr];
-        else
-          array_mao = [array_mao, qtd_extr];
-        endif
         B=peca_circ(n+1:end,:,:);
+        
         %Conta os numeros da extremidade e exibe%
-        qtd_extr = num_circ_func(B);
+        qtd_extr = [num_circ_func(A),num_circ_func(B)];
         if (acao == 1)
-          array_cenario = [array_cenario, qtd_extr];
+          array_mesa = [array_mesa, {qtd_extr}];
         else
-          array_mao = [array_mao, qtd_extr];
+          array_mao = [array_mao, {qtd_extr}];
         endif
+        
       else
-        %Corta a peça horizontal nas duas extremidades possiveis%
-        A = peca_circ(:, 1:end/2, :);
+      
+        %Corta a peca horizontal nas duas extremidades possiveis%
+        A = peca_circ(:, fix(1:end/2), :);
         %Conta os numeros da extremidade e exibe%
         qtd_extr = num_circ_func(A);
         if (acao == 1)
-          array_cenario = [array_cenario, qtd_extr];
+          array_mesa = [array_mesa, qtd_extr];
         else
           array_mao = [array_mao, qtd_extr];
         endif
-        B = peca_circ(:, end/2+1:end, :);
+        B = peca_circ(:, fix(end/2+1):end, :);
         %Conta os numeros da extremidade e exibe%
         qtd_extr = num_circ_func(B);
         if (acao == 1)
-          array_cenario = [array_cenario, qtd_extr];
+          array_mesa = [array_mesa, qtd_extr];
         else
           array_mao = [array_mao, qtd_extr];
         endif
       endif
       
     endfor
-    if(acao == 2)
-      encontrou = 0;
-      for k=3:length(array_cenario) && encontrou == 0
-        for l=3:length(array_mao) && encontrou == 0
-          if(array_mao(l) == array_cenario(k))
-            peca_igualdade_mao = ceil(l/2)-1;
-            encontrou = 1;
-          endif
-        endfor
-      endfor
-    endif
-    acao = acao + 1;
+  
+  %Processa dados
+  while(acao == 3)
+    %Exibe o nï¿½mero da peï¿½a%
+    peca_suger=sugestao_peca_func(mesa,mao);
+    mytitle=strcat('Sugestao de Peca: [', num2str(peca_suger(1)));
+    mytitle=strcat(mytitle, ',');
+    mytitle=strcat(mytitle, num2str(peca_suger(2)));
+    mytitle=strcat(mytitle, ']');
+    errordlg ("Sugestao",mytitle);
   endwhile
+  
+  acao++;
   Escolha = menu("Continuar para proxima etapa?","Sim","Nao");
 endwhile
 errordlg("A aplicacao foi abortada pelo usuario","Fim");
+
+close all
