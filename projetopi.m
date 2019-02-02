@@ -17,14 +17,17 @@ function result = num_circ_func (nome_img)
 endfunction
 
 %Fun��o respons�vel por encontrar uma peça valida%
-function peca = sugestao_peca_func (mesa,mao)
+function peca = sugestao_peca_func(mesa,mao)
   peca = [-1,-1];
-  inicio=(mesa{1})(1,1);
-  fim=(mesa{numel(mesa)})(1,2);
+  inicio=(mesa{1})(1,1)
+  fim=(mesa{numel(mesa)})(1,2)
   encontrou=0;
   
-  for i=1: size(mao,2)/2
-    if(encontrou==0&&((mao{i})(1,1)==inicio||(mao{i})(1,2)==inicio||(mao{i})(1,1)==fim||(mao{i})(1,2)==fim))
+  for i=1: numel(mao)
+    if(encontrou==0&&((mao{i})(1,1)==inicio||(mao{i})(1,2)==inicio))
+      peca = mao{i};
+      encontrou=1;
+    elseif((mao{i})(1,1)==fim||(mao{i})(1,2)==fim)
       peca = mao{i};
       encontrou=1;
     endif
@@ -37,12 +40,12 @@ Escolha = menu("Iniciar a aplicacao?","Sim","Nao");
 %Abre o FilePicker - Jogada Inicial%
 %helpdlg ("Selecione a imagem com a situacao atual do jogo de domino.","Iniciando Sistema");
 %[situacaoatual, caminhodoarquivo, fltidx] = uigetfile ({"*.png;*.jpg;*.jpeg", "Tipos de Imagens Suportadas"},"Selecione o arquivo inicial")
-caminhodoarquivo='./imagens/mesa1.jpeg';
+caminhodoarquivo='./imagens/mesa2.jpeg';
 situacaoatual='';
 %Abre o FilePicker - M�o do Jogador%
 %helpdlg ("Selecione a imagem com a sua mao do jogo de domino.","Selecione a sua mao");
 %[maoatual, caminhodoarquivomao, fltidx] = uigetfile ({"*.png;*.jpg;*.jpeg", "Tipos de Imagens Suportadas"},"Selecione o arquivo inicial")
-caminhodoarquivomao='./imagens/mao1.jpeg';
+caminhodoarquivomao='./imagens/mao3.jpeg';
 maoatual='';
 
 array_mesa = [];
