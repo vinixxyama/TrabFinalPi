@@ -17,21 +17,86 @@ function result = num_circ_func (nome_img)
 endfunction
 
 %Fun��o respons�vel por encontrar uma peça valida%
-function peca = sugestao_peca_func(mesa,mao)
-  peca = [-1,-1];
-  inicio=(mesa{1})(1,1)
-  fim=(mesa{numel(mesa)})(1,2)
+function [mesa, mao, fimdejogo] = sugestao_peca_func(mesa,mao,rodada)
+  fimdejogo = 0;
+  
+  estado="Mesa: \n";
+  for i=1 : numel(mesa)
+    estado=strcat(estado,mat2str(mesa{i}));
+  endfor
+  estado=strcat(estado,"\t");
+  
+  estado=strcat(estado,"\nMão: \n");
+  
+  if(numel(mao)==0)
+    estado=strcat(estado,"---");
+  endif
+  
+  for i=1 : numel(mao)
+    estado=strcat(estado,mat2str(mao{i}));
+  endfor
+  estado=strcat(estado,"\t");
+    
+  inicio=(mesa{1})(1,1);
+  fim=(mesa{numel(mesa)})(1,2);
   encontrou=0;
+  idx_peca=0;
+  destino=0;
   
   for i=1: numel(mao)
     if(encontrou==0&&((mao{i})(1,1)==inicio||(mao{i})(1,2)==inicio))
-      peca = mao{i};
+      idx_peca=i;
       encontrou=1;
-    elseif((mao{i})(1,1)==fim||(mao{i})(1,2)==fim)
-      peca = mao{i};
+      destino=1;
+    elseif(encontrou==0&&((mao{i})(1,1)==fim||(mao{i})(1,2)==fim))
+      idx_peca=i;
       encontrou=1;
+      destino=2;
     endif
   endfor
+   
+  if(idx_peca!=0)
+    
+    estado=strcat(estado,"\n\nSugestão: \n");
+    estado=strcat(estado,mat2str(mao{idx_peca}));
+    
+    msgbox(estado,strcat("Rodada: ",num2str(rodada)));
+  
+    %Coloca no conjunto%
+    if(destino==1)
+      %No inicio%
+      if(mao{idx_peca}(1,2)!=inicio)
+        aux=mao{i}(1,1);
+        mao{idx_peca}(1,1)=mao{idx_peca}(1,2);
+        mao{idx_peca}(1,2)=aux;
+        
+      endif
+      mesa=[{mao{idx_peca}} mesa];
+      
+    elseif(destino==2)
+      %No final%
+      if(mao{idx_peca}(1,1)!=fim)
+        aux=mao{idx_peca}(1,1);
+        mao{idx_peca}(1,1)=mao{idx_peca}(1,2);
+        mao{idx_peca}(1,2)=aux;
+
+      endif
+      
+      mesa=[mesa {mao{idx_peca}}];
+    endif
+    %Remove a peca da mao%
+    mao(idx_peca)=[];
+  else
+    msgbox(estado,strcat("Rodada: ",num2str(rodada)));
+    msg="Você não tem mais peças para jogar!";
+    
+    if(numel(mao)==0)
+      msg=strcat(msg,"\nParabéns! Você ganhou!");
+    endif
+    helpdlg (msg,"Fim do jogo");
+    fimdejogo=1;
+    close all
+  endif
   
 endfunction
 
@@ -40,18 +105,20 @@ Escolha = menu("Iniciar a aplicacao?","Sim","Nao");
 %Abre o FilePicker - Jogada Inicial%
 %helpdlg ("Selecione a imagem com a situacao atual do jogo de domino.","Iniciando Sistema");
 %[situacaoatual, caminhodoarquivo, fltidx] = uigetfile ({"*.png;*.jpg;*.jpeg", "Tipos de Imagens Suportadas"},"Selecione o arquivo inicial")
-caminhodoarquivo='./imagens/mesa2.jpeg';
+caminhodoarquivo='./imagens/mesa1.jpeg';
 situacaoatual='';
 %Abre o FilePicker - M�o do Jogador%
 %helpdlg ("Selecione a imagem com a sua mao do jogo de domino.","Selecione a sua mao");
 %[maoatual, caminhodoarquivomao, fltidx] = uigetfile ({"*.png;*.jpg;*.jpeg", "Tipos de Imagens Suportadas"},"Selecione o arquivo inicial")
-caminhodoarquivomao='./imagens/mao3.jpeg';
+caminhodoarquivomao='./imagens/mao1.jpeg';
 maoatual='';
 
 array_mesa = [];
 array_mao = [];
 acao = 1;
-while(Escolha == 1)
+fimdejogo=0;
+
+while(Escolha == 1 && fimdejogo == 0)
   %Leitura de cenario atual, lendo jogada (acao 1) ou mao (acao 2)%
   
   while (acao == 1 || acao == 2)
@@ -122,23 +189,18 @@ while(Escolha == 1)
     endfor
     acao++;
   endwhile
-  fimdejogo=0;
   %Processa dados
   while(acao >= 3&&fimdejogo==0)
-    %Exibe o n�mero da pe�a%
-    peca_suger=sugestao_peca_func(array_mesa,array_mao);
-    mytitle=strcat('Sugestao de Peca: [', num2str(peca_suger(1,1)));
-    mytitle=strcat(mytitle, ',');
-    mytitle=strcat(mytitle, num2str(peca_suger(1,2)));
-    mytitle=strcat(mytitle, ']');
-    msgbox(mytitle,"Sugestao");
+    [array_mesa,array_mao,fimdejogo]=sugestao_peca_func(array_mesa,array_mao, acao-2);
     acao++;
-    fimdejogo=1;
   endwhile
   
   Escolha = menu("Continuar para proxima etapa?","Sim","Nao");
   
 endwhile
-errordlg("A aplicacao foi abortada pelo usuario","Fim");
+
+if(fimdejogo==0)
+  errordlg("A aplicacao foi abortada pelo usuario","Fim");
+endif
 
 close all
