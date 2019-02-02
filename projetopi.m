@@ -5,7 +5,6 @@ clc
 
 pkg image load
 
-
 %Fun��o respons�vel por marcar os circulos de uma imagem%
 function result = num_circ_func (nome_img)
     figure,imshow(nome_img);
@@ -20,13 +19,13 @@ endfunction
 %Fun��o respons�vel por encontrar uma peça valida%
 function peca = sugestao_peca_func (mesa,mao)
   peca = [-1,-1];
-  inicio=mesa(1)
-  fim=mesa(2)
-  encontrou=1;
+  inicio=(mesa{1})(1,1);
+  fim=(mesa{numel(mesa)})(1,2);
+  encontrou=0;
   
   for i=1: size(mao,2)/2
-    if(encontrou==0)%&&(mao(i))(1)==inicio||mao(i*2)==inicio||mao((i*2)-1)==fim||mao(i*2)==fim)
-      peca = [mao((i*2)-1),mao(i*2)];
+    if(encontrou==0&&((mao{i})(1,1)==inicio||(mao{i})(1,2)==inicio||(mao{i})(1,1)==fim||(mao{i})(1,2)==fim))
+      peca = mao{i};
       encontrou=1;
     endif
   endfor
@@ -38,12 +37,12 @@ Escolha = menu("Iniciar a aplicacao?","Sim","Nao");
 %Abre o FilePicker - Jogada Inicial%
 %helpdlg ("Selecione a imagem com a situacao atual do jogo de domino.","Iniciando Sistema");
 %[situacaoatual, caminhodoarquivo, fltidx] = uigetfile ({"*.png;*.jpg;*.jpeg", "Tipos de Imagens Suportadas"},"Selecione o arquivo inicial")
-caminhodoarquivo='./imagens/mesa2.jpeg';
+caminhodoarquivo='./imagens/mesa1.jpeg';
 situacaoatual='';
 %Abre o FilePicker - M�o do Jogador%
 %helpdlg ("Selecione a imagem com a sua mao do jogo de domino.","Selecione a sua mao");
 %[maoatual, caminhodoarquivomao, fltidx] = uigetfile ({"*.png;*.jpg;*.jpeg", "Tipos de Imagens Suportadas"},"Selecione o arquivo inicial")
-caminhodoarquivomao='./imagens/mao3.jpeg';
+caminhodoarquivomao='./imagens/mao1.jpeg';
 maoatual='';
 
 array_mesa = [];
@@ -125,20 +124,14 @@ while(Escolha == 1)
   while(acao >= 3&&fimdejogo==0)
     %Exibe o n�mero da pe�a%
     peca_suger=sugestao_peca_func(array_mesa,array_mao);
-    mytitle=strcat('Sugestao de Peca: [', num2str(peca_suger(1)));
+    mytitle=strcat('Sugestao de Peca: [', num2str(peca_suger(1,1)));
     mytitle=strcat(mytitle, ',');
-    mytitle=strcat(mytitle, num2str(peca_suger(2)));
+    mytitle=strcat(mytitle, num2str(peca_suger(1,2)));
     mytitle=strcat(mytitle, ']');
-    msgbox(mytitle,"Sugestao, nao implementada");
+    msgbox(mytitle,"Sugestao");
     acao++;
     fimdejogo=1;
   endwhile
-  
-  if(fimdejogo==1)
-    close all
-    clear all
-    clc
-  endif
   
   Escolha = menu("Continuar para proxima etapa?","Sim","Nao");
   
