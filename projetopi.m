@@ -5,10 +5,9 @@ clc
 
 pkg image load
 
-
 %Fun��o respons�vel por marcar os circulos de uma imagem%
-function result = num_circ_func (nome_img)
-    figure,imshow(nome_img);
+function result = num_circ_func (nome_img,qtdobjt,idx)
+    subplot(qtdobjt,3,idx),imshow(nome_img);
     [centers,radii] = imfindcircles(nome_img,[5 30],'ObjectPolarity','dark','sensitivity',0.5,'EdgeThreshold',0.2);
     h = viscircles(centers, radii);
     tam = length(centers);
@@ -22,13 +21,12 @@ function [mesa, mao, pecas_mesa, pecas_mao, fimdejogo] = sugestao_peca_func(mesa
   fimdejogo = 0;
   subplot(2,1,1), imshow(cell2mat(pecas_mesa)), title('MESA');
   
-  hold on
-  %Desenha linhas no inicio e no fim%
-  g_pos=numel(cell2mat(pecas_mesa))/200;
-  plot([0,0],[50,150],'Color', 'b', 'LineWidth', 4, 'LineStyle', ':');
-  plot([g_pos,g_pos],[50,150],'Color', 'g', 'LineWidth', 4, 'LineStyle', ':');
-  
-  if(numel(mao)>0)      
+  if(numel(mao)>0)
+    hold on
+    %Desenha linhas no inicio e no fim%
+    g_pos=numel(cell2mat(pecas_mesa))/200;
+    plot([1,1],[50,150],'Color', 'b', 'LineWidth', 4, 'LineStyle', ':');
+    plot([g_pos,g_pos],[50,150],'Color', 'g', 'LineWidth', 4, 'LineStyle', ':');
     subplot(2,1,2), imshow(cell2mat(pecas_mao)), title('MÃO');
   else
     WIN=imread("./imagens/win.jpeg");
@@ -36,7 +34,6 @@ function [mesa, mao, pecas_mesa, pecas_mao, fimdejogo] = sugestao_peca_func(mesa
   endif
   
   %Procura pecas para sugerir%
-  
   inicio=(mesa{1})(1,1);
   fim=(mesa{numel(mesa)})(1,2);
   encontrou_inicio=0;
@@ -111,9 +108,10 @@ function [mesa, mao, pecas_mesa, pecas_mao, fimdejogo] = sugestao_peca_func(mesa
     helpdlg(txt,"Continue");
   endif
   
-  hold off
   
   if(idx_peca!=0)
+    hold off
+    clf
     %Coloca na mesa%
     %Gira a peca se os numeros forem diferentes%
     if(mao{idx_peca}(1,1)!=mao{idx_peca}(1,2))
@@ -164,7 +162,18 @@ endfunction
 
 Escolha = questdlg("Iniciar a aplicacao?","Iniciar","Sim","Nao","Sim");
 
-if(strcmp(Escolha,"Sim"))
+
+fimdejogo=0;
+
+while(strcmp(Escolha,"Sim") && fimdejogo == 0)
+  array_mesa = [];
+  array_mao = [];
+  pecas_mesa = [];
+  pecas_mao = [];
+  fundo=ones(50,200).*255;
+  acao = 1;
+  
+  %Leitura de cenario atual, lendo jogada (acao 1) ou mao (acao 2)%
   %Abre o FilePicker - Jogada Inicial%
   helpdlg ("Selecione a imagem com a situacao atual do jogo de domino.","Iniciando Sistema");
   [situacaoatual, caminhodoarquivo, fltidx] = uigetfile ({"*.png;*.jpg;*.jpeg", "Tipos de Imagens Suportadas"},"Selecione o arquivo inicial");
@@ -174,19 +183,7 @@ if(strcmp(Escolha,"Sim"))
   helpdlg ("Selecione a imagem com a sua mao do jogo de domino.","Selecione a sua mao");
   [maoatual, caminhodoarquivomao, fltidx] = uigetfile ({"*.png;*.jpg;*.jpeg", "Tipos de Imagens Suportadas"},"Selecione o arquivo inicial");
   %caminhodoarquivomao='./imagens/mao1.jpeg';
-  %maoatual='';
-endif
-
-array_mesa = [];
-array_mao = [];
-pecas_mesa = [];
-pecas_mao = [];
-fundo=ones(50,200).*255;
-acao = 1;
-fimdejogo=0;
-
-while(strcmp(Escolha,"Sim") && fimdejogo == 0)
-  %Leitura de cenario atual, lendo jogada (acao 1) ou mao (acao 2)%
+  %maoatual=''; 
   
   while (acao == 1 || acao == 2)
     %Abre a imagem selecionada, estado - acao 1 ou mao - acao 2
@@ -199,7 +196,7 @@ while(strcmp(Escolha,"Sim") && fimdejogo == 0)
     domino = imresize (domino, [306 408]);
     se = strel('square',2);
     
-    imshow(domino);
+    figure, imshow(domino);
     %Otimiza para segmenta��o
     domino_bw = im2bw(domino, graythresh(domino));
     domino_bw = imerode(domino_bw,se);
@@ -210,6 +207,7 @@ while(strcmp(Escolha,"Sim") && fimdejogo == 0)
     qtdobjt = max(max(label));
 
     %Encontra as coordenadas de todas as pe�as segmentadas, de forma iterativa%
+    figure,
     for j=1:max(max(label))
       [row, col] = find(label==j);
       len=max(row)-min(row)+2;
@@ -226,7 +224,7 @@ while(strcmp(Escolha,"Sim") && fimdejogo == 0)
       end
       %Exibe o n�mero da peça%
       mytitle=strcat('Numero da Peça:', num2str(j));
-      figure,imshow(target);title(mytitle);
+      subplot(qtdobjt,3,(j-1)*3+1),imshow(target), title(mytitle);
       
       %Observa a disposi��o da pe�a para corte, horizontal ou vertical%
       peca_circ = im2bw(target, graythresh(domino));
@@ -236,7 +234,7 @@ while(strcmp(Escolha,"Sim") && fimdejogo == 0)
         A=peca_circ(1:n,:,:);
         B=peca_circ(n+1:end,:,:);
         %Conta os numeros da extremidade e exibe%
-        qtd_extr = [num_circ_func(A),num_circ_func(B)];
+        qtd_extr = [num_circ_func(A,qtdobjt,(j-1)*3+2),num_circ_func(B,qtdobjt,(j-1)*3+3)];
         if (acao == 1)
           array_mesa = [array_mesa, {qtd_extr}];
           if(qtd_extr(1,1)!=qtd_extr(1,2))
@@ -257,7 +255,7 @@ while(strcmp(Escolha,"Sim") && fimdejogo == 0)
         A = peca_circ(:, fix(1:end/2), :);
         B = peca_circ(:, fix(end/2+1):end, :);
         %Conta os numeros da extremidade e exibe%
-        qtd_extr = [num_circ_func(A), num_circ_func(B)];
+        qtd_extr = [num_circ_func(A,qtdobjt,(j-1)*3+2), num_circ_func(B,qtdobjt,(j-1)*3+3)];
         if (acao == 1)
           array_mesa = [array_mesa, {qtd_extr}];
           if(qtd_extr(1,1)!=qtd_extr(1,2))
@@ -278,6 +276,7 @@ while(strcmp(Escolha,"Sim") && fimdejogo == 0)
     acao++;
     
   endwhile
+   
   Escolha = questdlg("Continuar para proxima etapa?","Continuar","Sim","Nao","Sim");
   
   figure,
