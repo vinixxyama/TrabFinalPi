@@ -9,10 +9,10 @@ pkg image load
 function result = num_circ_func (nome_img,qtdobjt,idx)
     subplot(qtdobjt,3,idx),imshow(nome_img);
     [centers,radii] = imfindcircles(nome_img,[5 30],'ObjectPolarity','dark','sensitivity',0.5,'EdgeThreshold',0.2);
-    h = viscircles(centers, radii);
+    h = viscircles(centers, radii.*(radii>5.0));
     tam = length(centers);
-    result = rows(centers);
-    caption = sprintf('valor = %d', rows(centers));
+    result = sum(radii>5.0);
+    caption = sprintf('valor = %d', sum(radii>5.0));
     text(5, 5, caption, 'Color', 'Blue', 'FontSize', 25);
 endfunction
 
