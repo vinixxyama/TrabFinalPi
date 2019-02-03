@@ -49,14 +49,16 @@ function [mesa, mao, pecas_mesa, pecas_mao, fimdejogo] = sugestao_peca_func(mesa
     endif
   endfor
   
+  %Escolha uma das opcoes%
   if(encontrou_fim==1&&encontrou_inicio==1&&idx_peca_fim!=idx_peca_inicio)
     txt="Escolha uma das peças sugeridas:\n\n";
     txt=strcat(txt,"Azul: ");
     txt=strcat(txt,mat2str(mao{idx_peca_inicio}));
     txt=strcat(txt,"\tVerde: ");
     txt=strcat(txt,mat2str(mao{idx_peca_fim}));
-    Escolha = questdlg(txt,"Escolha","Azul","Verde","Azul");
-    if(Escolha==1)
+    op = questdlg(txt,"Escolha","Azul","Verde","Azul");
+    op
+    if(strcmp(op,"Azul"))
       idx_peca=idx_peca_inicio;
       destino=1;
     else
@@ -71,27 +73,33 @@ function [mesa, mao, pecas_mesa, pecas_mao, fimdejogo] = sugestao_peca_func(mesa
   
   
   if(idx_peca!=0)
-  
-    %Coloca no conjunto%
+    %Coloca na mesa%
+    %Gira a peca se os numeros forem diferentes%
+    if(mao{idx_peca}(1,1)!=mao{idx_peca}(1,2))
+      pecas_mao{idx_peca}=imrotate(pecas_mao{idx_peca},90);
+    endif
     if(destino==1)
       %No inicio%
+      %Gira a peca%
       if(mao{idx_peca}(1,2)!=inicio)
         aux=mao{i}(1,1);
         mao{idx_peca}(1,1)=mao{idx_peca}(1,2);
         mao{idx_peca}(1,2)=aux;
-        
+        pecas_mao{idx_peca}=imrotate(pecas_mao{idx_peca},180);
       endif
       mesa=[{mao{idx_peca}} mesa];
       pecas_mesa=[{pecas_mao{idx_peca}} pecas_mesa];
       
     elseif(destino==2)
       %No final%
+      %Gira a peca%
       if(mao{idx_peca}(1,1)!=fim)
         aux=mao{idx_peca}(1,1);
         mao{idx_peca}(1,1)=mao{idx_peca}(1,2);
         mao{idx_peca}(1,2)=aux;
-
+        pecas_mao{idx_peca}=imrotate(pecas_mao{idx_peca},180);
       endif
+      
       
       mesa=[mesa {mao{idx_peca}}];
       pecas_mesa=[pecas_mesa {pecas_mao{idx_peca}}];
@@ -190,11 +198,19 @@ while(Escolha == 1 && fimdejogo == 0)
         qtd_extr = [num_circ_func(A),num_circ_func(B)];
         if (acao == 1)
           array_mesa = [array_mesa, {qtd_extr}];
-          pecas_mesa = [pecas_mesa, { [ fundo; imrotate(imresize(target,[200 100]),90,"nearest");fundo ] }];
+          if(qtd_extr(1,1)!=qtd_extr(1,2))
+            pecas_mesa = [pecas_mesa, { [ fundo; imrotate(imresize(target,[200 100]),90,"nearest");fundo ] }];
+          else
+            pecas_mesa = [pecas_mesa, { imresize(target,[200 100])}];
+          endif
         else
           array_mao = [array_mao, {qtd_extr}];
-          pecas_mao = [pecas_mao, { [ fundo' imresize(target,[200 100]) fundo' ] } ];
+          if(qtd_extr(1,1)!=qtd_extr(1,2))
+            pecas_mao = [pecas_mao, { [ fundo' imresize(target,[200 100]) fundo' ] } ];
+          else
+            pecas_mao = [pecas_mao, { imresize(target,[200 100])} ];
           endif
+        endif
       else
         %Corta a peca horizontal nas duas extremidades possiveis%
         A = peca_circ(:, fix(1:end/2), :);
@@ -203,11 +219,18 @@ while(Escolha == 1 && fimdejogo == 0)
         qtd_extr = [num_circ_func(A), num_circ_func(B)];
         if (acao == 1)
           array_mesa = [array_mesa, {qtd_extr}];
-          pecas_mesa = [pecas_mesa, { [ fundo;imresize(target,[100 200]);fundo] } ];
+          if(qtd_extr(1,1)!=qtd_extr(1,2))
+            pecas_mesa = [pecas_mesa, { [ fundo;imresize(target,[100 200]);fundo] } ];
+          else
+            pecas_mesa = [pecas_mesa, { imrotate(imresize(target,[100 200]),90,"nearest") } ];
+          endif
         else
           array_mao = [array_mao, {qtd_extr}];
-          pecas_mao = [pecas_mao, { [ fundo' imrotate(imresize(target,[100 200]) ,90,"nearest") fundo']}];
-       
+          if(qtd_extr(1,1)!=qtd_extr(1,2))
+            pecas_mao = [pecas_mao, { [ fundo' imrotate(imresize(target,[100 200]) ,270,"nearest") fundo']}];
+          else
+            pecas_mao = [pecas_mao, { imrotate(imresize(target,[100 200]) ,270,"nearest") }];
+          endif
         endif
       endif
     endfor
@@ -215,11 +238,10 @@ while(Escolha == 1 && fimdejogo == 0)
     figure, 
   endwhile
   %Processa dados
-  while(acao >= 3&&fimdejogo==0)
+  while(acao > 3&&fimdejogo==0)
     [array_mesa,array_mao,pecas_mesa,pecas_mao,fimdejogo]=sugestao_peca_func(array_mesa,array_mao, acao-2,pecas_mesa, pecas_mao);
-    acao++;
   endwhile
-  
+  acao++;
 endwhile
 
 if(fimdejogo==0)
