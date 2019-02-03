@@ -27,23 +27,7 @@ function [mesa, mao, pecas_mesa, pecas_mao, fimdejogo] = sugestao_peca_func(mesa
     WIN=imread("./imagens/win.jpeg");
     subplot(2,1,2), imshow(WIN), title('MÃO VAZIA!');
   endif
-  estado="Mesa: \n";
-  for i=1 : numel(mesa)
-    estado=strcat(estado,mat2str(mesa{i}));
-  endfor
-  estado=strcat(estado,"\t");
   
-  estado=strcat(estado,"\nMão: \n");
-  
-  if(numel(mao)==0)
-    estado=strcat(estado,"---");
-  endif
-  
-  for i=1 : numel(mao)
-    estado=strcat(estado,mat2str(mao{i}));
-  endfor
-  estado=strcat(estado,"\t");
-    
   inicio=(mesa{1})(1,1);
   fim=(mesa{numel(mesa)})(1,2);
   encontrou_inicio=0;
@@ -87,11 +71,6 @@ function [mesa, mao, pecas_mesa, pecas_mao, fimdejogo] = sugestao_peca_func(mesa
   
   
   if(idx_peca!=0)
-    
-    estado=strcat(estado,"\n\nSugestão: \n");
-    estado=strcat(estado,mat2str(mao{idx_peca}));
-    
-    msgbox(estado,strcat("Rodada: ",num2str(rodada)));
   
     %Coloca no conjunto%
     if(destino==1)
@@ -121,11 +100,11 @@ function [mesa, mao, pecas_mesa, pecas_mao, fimdejogo] = sugestao_peca_func(mesa
     mao(idx_peca)=[];
     pecas_mao(idx_peca)=[];
   else
-    msgbox(estado,strcat("Rodada: ",num2str(rodada)));
-    msg="Você não tem mais peças para jogar!";
-    
+    msg="";
     if(numel(mao)==0)
       msg=strcat(msg,"\nParabéns! Você ganhou!");
+    else
+      msg=strcat(msg,"Voce ficou sem mais jogadas possíveis!\nNão foi dessa vez...");
     endif
     helpdlg (msg,"Fim do jogo");
     fimdejogo=1;
@@ -139,12 +118,12 @@ Escolha = menu("Iniciar a aplicacao?","Sim","Nao");
 if(Escolha == 1)
   %Abre o FilePicker - Jogada Inicial%
   helpdlg ("Selecione a imagem com a situacao atual do jogo de domino.","Iniciando Sistema");
-  [situacaoatual, caminhodoarquivo, fltidx] = uigetfile ({"*.png;*.jpg;*.jpeg", "Tipos de Imagens Suportadas"},"Selecione o arquivo inicial")
+  [situacaoatual, caminhodoarquivo, fltidx] = uigetfile ({"*.png;*.jpg;*.jpeg", "Tipos de Imagens Suportadas"},"Selecione o arquivo inicial");
   %caminhodoarquivo='./imagens/mesa1.jpeg';
   %situacaoatual='';
   %Abre o FilePicker - M�o do Jogador%
   helpdlg ("Selecione a imagem com a sua mao do jogo de domino.","Selecione a sua mao");
-  [maoatual, caminhodoarquivomao, fltidx] = uigetfile ({"*.png;*.jpg;*.jpeg", "Tipos de Imagens Suportadas"},"Selecione o arquivo inicial")
+  [maoatual, caminhodoarquivomao, fltidx] = uigetfile ({"*.png;*.jpg;*.jpeg", "Tipos de Imagens Suportadas"},"Selecione o arquivo inicial");
   %caminhodoarquivomao='./imagens/mao1.jpeg';
   %maoatual='';
 endif
