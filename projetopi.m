@@ -5,6 +5,7 @@ clc
 
 pkg image load
 
+
 %Fun��o respons�vel por marcar os circulos de uma imagem%
 function result = num_circ_func (nome_img)
     figure,imshow(nome_img);
@@ -17,9 +18,15 @@ function result = num_circ_func (nome_img)
 endfunction
 
 %Fun��o respons�vel por encontrar uma peça valida%
-function [mesa, mao, fimdejogo] = sugestao_peca_func(mesa,mao,rodada)
+function [mesa, mao, pecas_mesa, pecas_mao, fimdejogo] = sugestao_peca_func(mesa,mao,rodada,pecas_mesa, pecas_mao)
   fimdejogo = 0;
-  
+  subplot(2,1,1), imshow(cell2mat(pecas_mesa)), title('MESA');
+  if(numel(mao)>0)      
+    subplot(2,1,2), imshow(cell2mat(pecas_mao)), title('MÃO');
+  else
+    WIN=imread("./imagens/win.jpeg");
+    subplot(2,1,2), imshow(WIN), title('MÃO VAZIA!');
+  endif
   estado="Mesa: \n";
   for i=1 : numel(mesa)
     estado=strcat(estado,mat2str(mesa{i}));
@@ -39,22 +46,46 @@ function [mesa, mao, fimdejogo] = sugestao_peca_func(mesa,mao,rodada)
     
   inicio=(mesa{1})(1,1);
   fim=(mesa{numel(mesa)})(1,2);
-  encontrou=0;
+  encontrou_inicio=0;
+  encontrou_fim=0;
+  idx_peca_inicio=0;
+  idx_peca_fim=0;
   idx_peca=0;
   destino=0;
   
   for i=1: numel(mao)
-    if(encontrou==0&&((mao{i})(1,1)==inicio||(mao{i})(1,2)==inicio))
-      idx_peca=i;
-      encontrou=1;
+    if(encontrou_inicio==0&&((mao{i})(1,1)==inicio||(mao{i})(1,2)==inicio))
+      idx_peca=idx_peca_inicio=i;
+      encontrou_inicio=1;
       destino=1;
-    elseif(encontrou==0&&((mao{i})(1,1)==fim||(mao{i})(1,2)==fim))
-      idx_peca=i;
-      encontrou=1;
+    elseif(encontrou_fim==0&&((mao{i})(1,1)==fim||(mao{i})(1,2)==fim))
+      idx_peca=idx_peca_fim=i;
+      encontrou_fim=1;
       destino=2;
     endif
   endfor
-   
+  
+  if(encontrou_fim==1&&encontrou_inicio==1&&idx_peca_fim!=idx_peca_inicio)
+    txt="Escolha uma das peças sugeridas:\n\n";
+    txt=strcat(txt,"Azul: ");
+    txt=strcat(txt,mat2str(mao{idx_peca_inicio}));
+    txt=strcat(txt,"\tVerde: ");
+    txt=strcat(txt,mat2str(mao{idx_peca_fim}));
+    Escolha = questdlg(txt,"Escolha","Azul","Verde","Azul");
+    if(Escolha==1)
+      idx_peca=idx_peca_inicio;
+      destino=1;
+    else
+      idx_peca=idx_peca_fim;
+      destino=2;
+    endif
+  elseif(encontrou_fim==1||encontrou_inicio==1)
+    txt="Peca sugerida:\n";
+    txt=strcat(txt,mat2str(mao{idx_peca}));
+    helpdlg(txt,"Continue");
+  endif
+  
+  
   if(idx_peca!=0)
     
     estado=strcat(estado,"\n\nSugestão: \n");
@@ -72,6 +103,7 @@ function [mesa, mao, fimdejogo] = sugestao_peca_func(mesa,mao,rodada)
         
       endif
       mesa=[{mao{idx_peca}} mesa];
+      pecas_mesa=[{pecas_mao{idx_peca}} pecas_mesa];
       
     elseif(destino==2)
       %No final%
@@ -83,9 +115,11 @@ function [mesa, mao, fimdejogo] = sugestao_peca_func(mesa,mao,rodada)
       endif
       
       mesa=[mesa {mao{idx_peca}}];
+      pecas_mesa=[pecas_mesa {pecas_mao{idx_peca}}];
     endif
     %Remove a peca da mao%
     mao(idx_peca)=[];
+    pecas_mao(idx_peca)=[];
   else
     msgbox(estado,strcat("Rodada: ",num2str(rodada)));
     msg="Você não tem mais peças para jogar!";
@@ -102,19 +136,24 @@ endfunction
 
 Escolha = menu("Iniciar a aplicacao?","Sim","Nao");
 
-%Abre o FilePicker - Jogada Inicial%
-%helpdlg ("Selecione a imagem com a situacao atual do jogo de domino.","Iniciando Sistema");
-%[situacaoatual, caminhodoarquivo, fltidx] = uigetfile ({"*.png;*.jpg;*.jpeg", "Tipos de Imagens Suportadas"},"Selecione o arquivo inicial")
-caminhodoarquivo='./imagens/mesa1.jpeg';
-situacaoatual='';
-%Abre o FilePicker - M�o do Jogador%
-%helpdlg ("Selecione a imagem com a sua mao do jogo de domino.","Selecione a sua mao");
-%[maoatual, caminhodoarquivomao, fltidx] = uigetfile ({"*.png;*.jpg;*.jpeg", "Tipos de Imagens Suportadas"},"Selecione o arquivo inicial")
-caminhodoarquivomao='./imagens/mao1.jpeg';
-maoatual='';
+if(Escolha == 1)
+  %Abre o FilePicker - Jogada Inicial%
+  helpdlg ("Selecione a imagem com a situacao atual do jogo de domino.","Iniciando Sistema");
+  [situacaoatual, caminhodoarquivo, fltidx] = uigetfile ({"*.png;*.jpg;*.jpeg", "Tipos de Imagens Suportadas"},"Selecione o arquivo inicial")
+  %caminhodoarquivo='./imagens/mesa1.jpeg';
+  %situacaoatual='';
+  %Abre o FilePicker - M�o do Jogador%
+  helpdlg ("Selecione a imagem com a sua mao do jogo de domino.","Selecione a sua mao");
+  [maoatual, caminhodoarquivomao, fltidx] = uigetfile ({"*.png;*.jpg;*.jpeg", "Tipos de Imagens Suportadas"},"Selecione o arquivo inicial")
+  %caminhodoarquivomao='./imagens/mao1.jpeg';
+  %maoatual='';
+endif
 
 array_mesa = [];
 array_mao = [];
+pecas_mesa = [];
+pecas_mao = [];
+fundo=ones(50,200).*255;
 acao = 1;
 fimdejogo=0;
 
@@ -131,10 +170,11 @@ while(Escolha == 1 && fimdejogo == 0)
     %Redimensiona a imagem para facilitar nas manipula��es
     domino = imresize (domino, [306 408]);
     se = strel('square',2);
-    domino = imerode(domino,se);
+    
     imshow(domino);
     %Otimiza para segmenta��o
     domino_bw = im2bw(domino, graythresh(domino));
+    domino_bw = imerode(domino_bw,se);
     domino_bw = imfill(domino_bw, 'holes');
 
     %Mapeia a quantidade de pe�as na jogada
@@ -156,8 +196,8 @@ while(Escolha == 1 && fimdejogo == 0)
         y=col(i,1)-sy;
         target(x,y)=domino(row(i,1),col(i,1));
       end
-      %Exibe o n�mero da pe�a%
-      mytitle=strcat('Numero da Peca:', num2str(j));
+      %Exibe o n�mero da peça%
+      mytitle=strcat('Numero da Peça:', num2str(j));
       figure,imshow(target);title(mytitle);
       
       %Observa a disposi��o da pe�a para corte, horizontal ou vertical%
@@ -171,9 +211,11 @@ while(Escolha == 1 && fimdejogo == 0)
         qtd_extr = [num_circ_func(A),num_circ_func(B)];
         if (acao == 1)
           array_mesa = [array_mesa, {qtd_extr}];
+          pecas_mesa = [pecas_mesa, { [ fundo; imrotate(imresize(target,[200 100]),90,"nearest");fundo ] }];
         else
           array_mao = [array_mao, {qtd_extr}];
-        endif
+          pecas_mao = [pecas_mao, { [ fundo' imresize(target,[200 100]) fundo' ] } ];
+          endif
       else
         %Corta a peca horizontal nas duas extremidades possiveis%
         A = peca_circ(:, fix(1:end/2), :);
@@ -182,20 +224,22 @@ while(Escolha == 1 && fimdejogo == 0)
         qtd_extr = [num_circ_func(A), num_circ_func(B)];
         if (acao == 1)
           array_mesa = [array_mesa, {qtd_extr}];
+          pecas_mesa = [pecas_mesa, { [ fundo;imresize(target,[100 200]);fundo] } ];
         else
           array_mao = [array_mao, {qtd_extr}];
+          pecas_mao = [pecas_mao, { [ fundo' imrotate(imresize(target,[100 200]) ,90,"nearest") fundo']}];
+       
         endif
       endif
     endfor
     acao++;
+    figure, 
   endwhile
   %Processa dados
   while(acao >= 3&&fimdejogo==0)
-    [array_mesa,array_mao,fimdejogo]=sugestao_peca_func(array_mesa,array_mao, acao-2);
+    [array_mesa,array_mao,pecas_mesa,pecas_mao,fimdejogo]=sugestao_peca_func(array_mesa,array_mao, acao-2,pecas_mesa, pecas_mao);
     acao++;
   endwhile
-  
-  Escolha = menu("Continuar para proxima etapa?","Sim","Nao");
   
 endwhile
 
