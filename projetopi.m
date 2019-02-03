@@ -21,12 +21,21 @@ endfunction
 function [mesa, mao, pecas_mesa, pecas_mao, fimdejogo] = sugestao_peca_func(mesa,mao,rodada,pecas_mesa, pecas_mao)
   fimdejogo = 0;
   subplot(2,1,1), imshow(cell2mat(pecas_mesa)), title('MESA');
+  
+  hold on
+  %Desenha linhas no inicio e no fim%
+  g_pos=numel(cell2mat(pecas_mesa))/200;
+  plot([0,0],[50,150],'Color', 'b', 'LineWidth', 4, 'LineStyle', ':');
+  plot([g_pos,g_pos],[50,150],'Color', 'g', 'LineWidth', 4, 'LineStyle', ':');
+  
   if(numel(mao)>0)      
     subplot(2,1,2), imshow(cell2mat(pecas_mao)), title('MÃO');
   else
     WIN=imread("./imagens/win.jpeg");
     subplot(2,1,2), imshow(WIN), title('MÃO VAZIA!');
   endif
+  
+  %Procura pecas para sugerir%
   
   inicio=(mesa{1})(1,1);
   fim=(mesa{numel(mesa)})(1,2);
@@ -49,6 +58,38 @@ function [mesa, mao, pecas_mesa, pecas_mao, fimdejogo] = sugestao_peca_func(mesa
     endif
   endfor
   
+  %Desenha retangulos nas opções sugeridas%
+  if(encontrou_inicio==1)
+    r_width = 98; 
+    r_height = 198;
+    
+    xCenter = 0; 
+    for i=1 : idx_peca_inicio-1
+      xCenter+=numel(pecas_mao{i})/200;
+    endfor
+    xCenter+=numel(pecas_mao{idx_peca_inicio})/400;
+    
+    yCenter = 100; 
+    xLeft = xCenter - r_width/2;
+    yBottom = yCenter - r_height/2;
+    rectangle('Position', [xLeft, yBottom, r_width, r_height], 'EdgeColor', 'b', 'LineWidth', 4);
+  endif  
+  if(encontrou_fim==1)
+    r_width = 98; 
+    r_height = 198;
+    
+    xCenter = 0; 
+    for i=1 : idx_peca_fim-1
+      xCenter+=numel(pecas_mao{i})/200;
+    endfor
+    xCenter+=numel(pecas_mao{idx_peca_fim})/400;
+    
+    yCenter = 100; 
+    xLeft = xCenter - r_width/2;
+    yBottom = yCenter - r_height/2;
+    rectangle('Position', [xLeft, yBottom, r_width, r_height], 'EdgeColor', 'g', 'LineWidth', 4);
+  endif
+  
   %Escolha uma das opcoes%
   if(encontrou_fim==1&&encontrou_inicio==1&&idx_peca_fim!=idx_peca_inicio)
     txt="Escolha uma das peças sugeridas:\n\n";
@@ -57,7 +98,6 @@ function [mesa, mao, pecas_mesa, pecas_mao, fimdejogo] = sugestao_peca_func(mesa
     txt=strcat(txt,"\tVerde: ");
     txt=strcat(txt,mat2str(mao{idx_peca_fim}));
     op = questdlg(txt,"Escolha","Azul","Verde","Azul");
-    op
     if(strcmp(op,"Azul"))
       idx_peca=idx_peca_inicio;
       destino=1;
@@ -71,6 +111,7 @@ function [mesa, mao, pecas_mesa, pecas_mao, fimdejogo] = sugestao_peca_func(mesa
     helpdlg(txt,"Continue");
   endif
   
+  hold off
   
   if(idx_peca!=0)
     %Coloca na mesa%
@@ -121,9 +162,9 @@ function [mesa, mao, pecas_mesa, pecas_mao, fimdejogo] = sugestao_peca_func(mesa
   
 endfunction
 
-Escolha = menu("Iniciar a aplicacao?","Sim","Nao");
+Escolha = questdlg("Iniciar a aplicacao?","Iniciar","Sim","Nao","Sim");
 
-if(Escolha == 1)
+if(strcmp(Escolha,"Sim"))
   %Abre o FilePicker - Jogada Inicial%
   helpdlg ("Selecione a imagem com a situacao atual do jogo de domino.","Iniciando Sistema");
   [situacaoatual, caminhodoarquivo, fltidx] = uigetfile ({"*.png;*.jpg;*.jpeg", "Tipos de Imagens Suportadas"},"Selecione o arquivo inicial");
@@ -144,7 +185,7 @@ fundo=ones(50,200).*255;
 acao = 1;
 fimdejogo=0;
 
-while(Escolha == 1 && fimdejogo == 0)
+while(strcmp(Escolha,"Sim") && fimdejogo == 0)
   %Leitura de cenario atual, lendo jogada (acao 1) ou mao (acao 2)%
   
   while (acao == 1 || acao == 2)
@@ -235,10 +276,13 @@ while(Escolha == 1 && fimdejogo == 0)
       endif
     endfor
     acao++;
-    figure, 
+    
   endwhile
+  Escolha = questdlg("Continuar para proxima etapa?","Continuar","Sim","Nao","Sim");
+  
+  figure,
   %Processa dados
-  while(acao > 3&&fimdejogo==0)
+  while(strcmp(Escolha,"Sim")&&fimdejogo==0)
     [array_mesa,array_mao,pecas_mesa,pecas_mao,fimdejogo]=sugestao_peca_func(array_mesa,array_mao, acao-2,pecas_mesa, pecas_mao);
   endwhile
   acao++;
