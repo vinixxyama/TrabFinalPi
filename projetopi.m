@@ -13,7 +13,7 @@ function result = num_circ_func (nome_img,qtdobjt,idx)
     tam = length(centers);
     result = sum(radii>5.0);
     caption = sprintf('valor = %d', sum(radii>5.0));
-    text(5, 5, caption, 'Color', 'Blue', 'FontSize', 25);
+    title(caption);
 endfunction
 
 %Fun��o respons�vel por encontrar uma peça valida%
@@ -278,8 +278,9 @@ while(strcmp(Escolha,"Sim") && fimdejogo == 0)
   endwhile
    
   Escolha = questdlg("Continuar para proxima etapa?","Continuar","Sim","Nao","Sim");
-  
-  figure,
+  if(strcmp(Escolha,"Sim"))
+    figure,
+  endif
   %Processa dados
   while(strcmp(Escolha,"Sim")&&fimdejogo==0)
     [array_mesa,array_mao,pecas_mesa,pecas_mao,fimdejogo]=sugestao_peca_func(array_mesa,array_mao, acao-2,pecas_mesa, pecas_mao);
